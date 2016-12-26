@@ -110,7 +110,8 @@ module Rack
       # for param parsing like soap attachments or generic multiparts
       PARSEABLE_DATA_MEDIA_TYPES = [
         'multipart/related',
-        'multipart/mixed'
+        'multipart/mixed',
+        'application/json'
       ]
 
       # Default ports depending on scheme. Used to decide whether or not
@@ -465,7 +466,12 @@ module Rack
       end
 
       def parse_query(qs, d='&')
-        query_parser.parse_nested_query(qs, d)
+        case media_type
+        when 'application/json'
+          (qs && qs != '') ? ::Rack::Utils::OkJson.decode(qs) : {}
+        else
+          query_parser.parse_nested_query(qs, d)
+        end
       end
 
       def parse_multipart
